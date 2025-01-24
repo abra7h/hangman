@@ -11,7 +11,7 @@ import (
 // Функция для старта игры
 func start() bool {
 	var command string
-	var flag bool
+	var isGameStarted bool
 
 	fmt.Println("Press [N]ew to Start game or [E]nd to kill this program")
 	fmt.Scanln(&command)
@@ -27,7 +27,7 @@ func start() bool {
 		flag = false
 	default:
 		fmt.Println("Command not recognized, try again")
-		flag = start()
+		isGameStarted = start()
 	}
 
 	return flag
