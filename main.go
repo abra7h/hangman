@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -37,10 +38,10 @@ func fileReader() []string {
 func launchingTheGame(words []string) {
 	rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
 	for {
-		var secretWord []string
+		var secretWord []rune
 		word := words[rand.Intn(len(words))]
 		for _, letter := range word {
-			secretWord = append(secretWord, string(letter))
+			secretWord = append(secretWord, letter)
 		}
 
 		startingVar := startMenu()
@@ -76,13 +77,13 @@ func startMenu() bool {
 	return isGameStarted
 }
 
-func gamePlay(word []string) {
-	fmt.Println(word)
+func gamePlay(word []rune) {
+	fmt.Println(string(word))
 
 	wordLength := len(word)
 	guessedLetters := printGuessedWord(wordLength)
 
-	var guessed []string
+	var guessed []rune
 	var mistakeCounter int
 	var currentLength int // текущая количество отгаданных букв
 
@@ -109,29 +110,39 @@ func gamePlay(word []string) {
 
 }
 
-func enterTheLetter() string {
+func enterTheLetter() rune {
 	var inputLetter string
 
 	fmt.Print("Enter the letter: ")
 	_, err := fmt.Scanln(&inputLetter)
+
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	fmt.Print("Your word looks like: ")
+	temp := []rune(inputLetter)
+	if _, err := strconv.Atoi(inputLetter); err == nil {
+		fmt.Println("You can't enter a number, please enter a letter")
+		temp[0] = enterTheLetter()
+	} else if len(temp) != 1 {
+		fmt.Println("Enter only one letter")
+		temp[0] = enterTheLetter()
+	} else {
+		fmt.Print("Your word looks like: ")
+	}
+	return temp[0]
 
-	return inputLetter
 }
 
-func checkTheLetterInWord(word *[]string, guessedLetters *[]string, guessed *[]string, currentLength *int) (bool, int) {
+func checkTheLetterInWord(word *[]rune, guessedLetters *[]string, guessed *[]rune, currentLength *int) (bool, int) {
 
 	isFound := false
 	inputLetter := enterTheLetter()
 
 	for i, letter := range *word {
 		if letter == inputLetter && !isElementInSlice(*guessed, inputLetter) { // если буква найдена в слове, то обновить слайс "угаданных букв", добавив новую
-			(*guessedLetters)[i] = (*word)[i] // добавляем эту новую букву в слайс
-			*currentLength++                  // инкрементируем количество отгаданных букв
+			(*guessedLetters)[i] = string((*word)[i]) // добавляем эту новую букву в слайс
+			*currentLength++                          // инкрементируем количество отгаданных букв
 
 			isFound = true // флаг того, что буква была отгадана на этом шаге
 		} else if (*guessedLetters)[i] != "*" {
@@ -204,7 +215,7 @@ func hangThisMan(mistakeCounter int) {
 
 }
 
-func isElementInSlice(slice []string, element string) bool {
+func isElementInSlice(slice []rune, element rune) bool {
 	for _, value := range slice {
 		if value == element {
 			return true
@@ -229,9 +240,9 @@ func printGuessedWord(length int) []string {
 	return wordMadeOfStars
 }
 
-func printSlice(slice *[]string) {
+func printSlice[A rune | string](slice *[]A) {
 	for _, v := range *slice {
-		fmt.Print(v, " ")
+		fmt.Print(string(v), " ")
 	}
 	fmt.Println()
 }
