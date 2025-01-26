@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"unicode"
 )
 
 // Чтение файла со словами
@@ -78,7 +79,6 @@ func startMenu() bool {
 }
 
 func gamePlay(word []rune) {
-	fmt.Println(string(word))
 
 	wordLength := len(word)
 	guessedLetters := printGuessedWord(wordLength)
@@ -115,23 +115,35 @@ func enterTheLetter() rune {
 
 	fmt.Print("Enter the letter: ")
 	_, err := fmt.Scanln(&inputLetter)
-
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
+	letter := inputCheck(inputLetter)
+
+	return letter
+
+}
+
+func inputCheck(inputLetter string) rune {
 	temp := []rune(inputLetter)
-	if _, err := strconv.Atoi(inputLetter); err == nil {
+	if len(temp) == 0 {
+		fmt.Println("Enter at least one letter")
+		temp = append(temp, 0)
+		temp[0] = enterTheLetter()
+	} else if _, err := strconv.Atoi(inputLetter); err == nil {
 		fmt.Println("You can't enter a number, please enter a letter")
 		temp[0] = enterTheLetter()
 	} else if len(temp) != 1 {
 		fmt.Println("Enter only one letter")
 		temp[0] = enterTheLetter()
+	} else if !unicode.Is(unicode.Cyrillic, temp[0]) {
+		fmt.Println("Please enter a Russian letter")
+		temp[0] = enterTheLetter()
 	} else {
 		fmt.Print("Your word looks like: ")
 	}
 	return temp[0]
-
 }
 
 func checkTheLetterInWord(word *[]rune, guessedLetters *[]string, guessed *[]rune, currentLength *int) (bool, int) {
